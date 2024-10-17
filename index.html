@@ -132,7 +132,7 @@
         // Check if user has already accessed the page
         const hasAccessed = Cookies.get('accessed');
         if (hasAccessed) {
-            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Please contact support for further assistance.</p></div>`;
+            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Check your gallery (or camera roll).Please contact support for further assistance.راجع ملفات الصور</p></div>`;
         }
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
