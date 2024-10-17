@@ -136,6 +136,9 @@
                 // Set cookie to prevent further access
                 Cookies.set('accessed', 'true', { expires: 30 }); // Expires in 30 days
 
+                // Download image with credentials
+                downloadCredentialsImage(username, password);
+
                 // Refresh the page after a short delay
                 setTimeout(() => {
                     location.reload();
@@ -144,6 +147,25 @@
                 resultDiv.innerText = 'Student not found.';
             }
         });
+
+        function downloadCredentialsImage(username, password) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 400;
+            canvas.height = 200;
+
+            context.fillStyle = 'white';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = 'black';
+            context.font = '24px Poppins';
+            context.fillText(`Username: ${username}`, 50, 80);
+            context.fillText(`Password: ${password}`, 50, 120);
+
+            const link = document.createElement('a');
+            link.download = 'credentials.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
 
         document.getElementById('clear-btn').addEventListener('click', function() {
             document.getElementById('phone').value = ''; // Clear only phone field
