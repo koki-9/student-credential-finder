@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Credential Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6a82fb, #fc5c7d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center; 
+            width: 90%;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .page-heading {
+            font-size: 28px; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; 
+        }
+
+        input {
+            padding: 10px; 
+            margin: 10px 0;
+            border: 2px solid #6a82fb;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px; 
+        }
+
+        input:focus {
+            border-color: #fc5c7d;
+            outline: none;
+            box-shadow: 0 0 5px rgba(252, 92, 125, 0.5);
+        }
+
+        button {
+            padding: 10px; 
+            border: none;
+            border-radius: 8px;
+            background-color: #fc5c7d; 
+            color: white;
+            font-size: 16px; 
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #6a82fb; 
+            transform: translateY(-2px); 
+        }
+
+        .result {
+            margin-top: 20px;
+            font-weight: 500; 
+            font-size: 18px; 
+            color: #333;
+            padding: 15px; 
+            border: 2px solid #6a82fb;
+            border-radius: 8px;
+            background-color: rgba(106, 130, 251, 0.1);
+        }
+
+        .timer {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #fc5c7d;
+            display: none; /* Hidden initially */
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0); }
+            25% { transform: translate(-5px); }
+            50% { transform: translate(5px); }
+            75% { transform: translate(-5px); }
+            100% { transform: translate(0); }
+        }
+
+        @media (max-width: 600px) {
+            .page-heading {
+                font-size: 24px; 
+            }
+
+            input, button {
+                font-size: 14px; 
+                padding: 8px; 
+            }
+
+            .result {
+                font-size: 16px; 
+            }
+
+            .timer {
+                font-size: 20px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-heading">Student Verifications</h1>
+        <form id="search-form">
+            <input type="text" id="name" placeholder="Student Name" required>
+            <input type="text" id="phone" placeholder="Phone Number" required>
+            <button type="submit">Search</button>
+            <button type="button" id="clear-btn">Clear</button>
+        </form>
+        <div id="result" class="result"></div>
+        <div id="timer" class="timer"></div> <!-- Timer element -->
+    </div>
+    <script>
+        const students = [
+            { name: "John Doe", phone: "1234567890", username: "johndoe", password: "secret123" },
+            { name: "Jane Smith", phone: "9876543210", username: "janesmith", password: "password456" },
+            { name: "Layla", phone: "51542", username: "laylasaleh", password: "545555" },
+            { name: "Nizar Rahal", phone: "3652", username: "nizarrahal", password: "44125" },
+        ];
+
+        // Check if user has already accessed the page
+        const savedUsername = Cookies.get('username');
+        if (savedUsername) {
+            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Please contact support for further assistance.</p></div>`;
+        }
+
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('name');
+            const name = nameInput.value.toLowerCase().trim();
+            const phone = document.getElementById('phone').value.trim();
+            const resultDiv = document.getElementById('result');
+            const timerDiv = document.getElementById('timer');
+            timerDiv.style.display = 'none'; // Hide timer initially
+
+            const foundStudent = students.filter(student => 
+                student.name.toLowerCase() === name && 
+                student.phone === phone
+            );
+
+            if (foundStudent.length > 0) {
+                const { username, password } = foundStudent[0];
+                resultDiv.innerText = `Username: ${username}\nPassword: ${password}`;
+
+                // Save the username in a cookie
+                Cookies.set('username', username, { expires: 30 }); // Expires in 30 days
+
+                // Disable the username input field
+                nameInput.disabled = true;
+
+                // Download the result as an image immediately
+                downloadImage(resultDiv);
+
+                // Start 10 seconds timer
+                startTimer(10);
+            } else {
+                resultDiv.innerText = 'Student not found.';
+                resultDiv.classList.add('shake');
+                setTimeout(() => {
+                    resultDiv.classList.remove('shake');
+                }, 500);
+            }
+        });
+
+        function downloadImage(resultDiv) {
+            html2canvas(resultDiv).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'credentials.jpg';
+                link.href = canvas.toDataURL('image/jpeg');
+                link.click();
+            });
+        }
+
+        function startTimer(duration) {
+            let timer = duration;
+            const timerDiv = document.getElementById('timer');
+            timerDiv.style.display = 'block'; // Show timer
+            const interval = setInterval(() => {
+                const seconds = parseInt(timer % 60, 10);
+                timerDiv.innerText = `Time left: ${seconds} seconds`;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    timerDiv.innerText = 'Time expired.';
+                    document.getElementById('phone').value = ''; // Clear password field only
+                }
+            }, 1000);
+        }
+
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            document.getElementById('phone').value = ''; // Clear only password field
+            document.getElementById('result').innerText = '';
+            document.getElementById('timer').innerText = '';
+            document.getElementById('timer').style.display = 'none'; // Hide timer
+            document.body.style.background = "linear-gradient(135deg, #6a82fb, #fc5c7d)"; // Reset background
+        });
+    </script>
+</body>
+</html>
