@@ -89,23 +89,6 @@
             border-radius: 8px;
             background-color: rgba(106, 130, 251, 0.1);
         }
-
-        .message {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.9);
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            z-index: 10;
-            display: none; /* Hidden initially */
-        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
 </head>
@@ -119,7 +102,6 @@
             <button type="button" id="clear-btn">Clear</button>
         </form>
         <div id="result" class="result"></div>
-        <div class="message" id="message">Username and Password</div>
     </div>
     <script>
         const students = [
@@ -132,17 +114,15 @@
         // Check if user has already accessed the page
         const hasAccessed = Cookies.get('accessed');
         if (hasAccessed) {
-            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Check your gallery (or camera roll).Please contact support for further assistance.راجع ملفات الصور</p></div>`;
+            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Please contact support for further assistance.</p></div>`;
         }
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const nameInput = document.getElementById('name');
-            const name = nameInput.value.toLowerCase().trim();
+            const name = document.getElementById('name').value.toLowerCase().trim();
             const phone = document.getElementById('phone').value.trim();
             const resultDiv = document.getElementById('result');
-            const messageDiv = document.getElementById('message');
 
             const foundStudent = students.filter(student => 
                 student.name.toLowerCase() === name && 
@@ -156,20 +136,12 @@
                 // Set cookie to prevent further access
                 Cookies.set('accessed', 'true', { expires: 30 }); // Expires in 30 days
 
-                // Show the message and clear the form
-                messageDiv.style.display = 'flex';
+                // Refresh the page after a short delay
                 setTimeout(() => {
-                    messageDiv.innerText = 'Username and Password';
-                    nameInput.value = '';
-                    document.getElementById('phone').value = '';
-                    resultDiv.innerText = '';
-                }, 2000); // Show for 2 seconds
+                    location.reload();
+                }, 2000); // Refresh after 2 seconds
             } else {
                 resultDiv.innerText = 'Student not found.';
-                resultDiv.classList.add('shake');
-                setTimeout(() => {
-                    resultDiv.classList.remove('shake');
-                }, 500);
             }
         });
 
@@ -180,4 +152,3 @@
     </script>
 </body>
 </html>
-
