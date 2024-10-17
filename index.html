@@ -54,6 +54,7 @@
             border-radius: 8px;
             width: 100%;
             font-size: 16px; 
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         input:focus {
@@ -88,6 +89,14 @@
             border: 2px solid #6a82fb;
             border-radius: 8px;
             background-color: rgba(106, 130, 251, 0.1);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
@@ -100,6 +109,7 @@
             <input type="text" id="phone" placeholder="Phone Number" required>
             <button type="submit">Search</button>
             <button type="button" id="clear-btn">Clear</button>
+            <button type="button" id="refresh-btn">Refresh</button>
         </form>
         <div id="result" class="result"></div>
     </div>
@@ -111,10 +121,11 @@
             { name: "Nizar Rahal", phone: "3652", username: "nizarrahal", password: "44125" },
         ];
 
-        // Check if user has already accessed the page
-        const hasAccessed = Cookies.get('accessed');
-        if (hasAccessed) {
-            document.body.innerHTML = `<div class="container"><h1 class="page-heading">Access Denied</h1><p>You have already retrieved your credentials. Please contact support for further assistance.</p></div>`;
+        // Check if user has already accessed the page and saved a name
+        const savedName = Cookies.get('studentName');
+        if (savedName) {
+            document.getElementById('name').value = savedName;
+            document.getElementById('name').disabled = true; // Disable input field
         }
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
@@ -132,19 +143,17 @@
             if (foundStudent.length > 0) {
                 const { username, password } = foundStudent[0];
                 resultDiv.innerText = `Username: ${username}\nPassword: ${password}`;
+                resultDiv.classList.add('show');
 
-                // Set cookie to prevent further access
-                Cookies.set('accessed', 'true', { expires: 30 }); // Expires in 30 days
+                // Set cookie to prevent further edits and save name
+                Cookies.set('studentName', name, { expires: 30 }); // Expires in 30 days
 
                 // Download image with credentials
                 downloadCredentialsImage(username, password);
-
-                // Refresh the page after a short delay
-                setTimeout(() => {
-                    location.reload();
-                }, 2000); // Refresh after 2 seconds
             } else {
                 resultDiv.innerText = 'Student not found.';
+                resultDiv.classList.add('show');
+                document.getElementById('phone').value = ''; // Clear phone input on wrong input
             }
         });
 
@@ -170,6 +179,11 @@
         document.getElementById('clear-btn').addEventListener('click', function() {
             document.getElementById('phone').value = ''; // Clear only phone field
             document.getElementById('result').innerText = '';
+            document.getElementById('result').classList.remove('show'); // Hide result
+        });
+
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            location.reload(); // Refresh the page
         });
     </script>
 </body>
